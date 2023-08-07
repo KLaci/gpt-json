@@ -1,6 +1,6 @@
 {
   "name": "gpt-json",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Call OpenAI's GPT APIs with structured responses",
   "main": "./lib/index.js",
   "files": [
@@ -114,7 +114,6 @@
     "@types/isomorphic-fetch": "^0.0.36",
     "form-data": "^4.0.0",
     "isomorphic-fetch": "^3.0.0",
-    "node-fetch": "^3.3.2",
     "openai": "4.0.0-beta.7",
     "yup": "^1.2.0"
   }

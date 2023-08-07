@@ -75,6 +75,18 @@ describe('stream tests', () => {
     expect(correctResponse).toEqual(true);
   });
 
+  it('stream object test', async () => {
+    const resp = await client.executeRequest({
+      model: 'gpt-4',
+      request: 'Tallest building in the world',
+      schema: object({
+        name: string(),
+        country: string(),
+      }),
+    });
+    console.log('🚀 ~ file: index.spec.ts:87 ~ it ~ resp:', resp);
+  });
+
   it('stream array test', async () => {
     let correctResponse = false;
 
