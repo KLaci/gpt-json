@@ -1,4 +1,16 @@
-import { Configuration, OpenAIApi } from 'openai';
+import fetch from 'isomorphic-fetch';
+import FormData from 'form-data';
+global.fetch = fetch as any;
+global.FormData = FormData as any;
+global.File = class File {
+  constructor() {}
+} as any;
+global.Blob = class Blob {
+  constructor() {}
+} as any;
+
+import OpenAI from 'openai';
+
 import {
   ArraySchema,
   ObjectSchema,
@@ -15,6 +27,10 @@ export interface GPTJSONRequest {
   model: string;
   request: string;
   schema: ObjectSchema<any> | ArraySchema<any, any, any, any>;
+}
+
+export interface GPTStreamJSONRequest extends GPTJSONRequest {
+  onUpdate?: (data: any) => void;
 }
 
 function indentation(depth: number): string {
@@ -86,6 +102,14 @@ export function generateSchemaDescription(schema: ObjectSchema<any>): string {
   return serializedDescription;
 }
 
+function tryParse(json: string): any {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    return null;
+  }
+}
+
 class GPTJSON {
   private apiKey: string;
 
@@ -97,14 +121,12 @@ class GPTJSON {
     model,
     request,
     schema,
-  }: GPTJSONRequest): Promise<Record<string, unknown>> {
-    const config = new Configuration({
+  }: GPTJSONRequest): Promise<any> {
+    const openai = new OpenAI({
       apiKey: this.apiKey,
     });
 
-    const openai = new OpenAIApi(config);
-
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: model,
       messages: [
         {
@@ -116,8 +138,7 @@ class GPTJSON {
       ],
     });
 
-    const respMessage =
-      response.data.choices?.[0]?.message?.content?.trim() ?? '';
+    const respMessage = response.choices?.[0]?.message?.content?.trim() ?? '';
 
     if (respMessage === '') {
       throw new Error('No response from OpenAI');
@@ -127,6 +148,67 @@ class GPTJSON {
 
     const isValid = await schema.isValid(parsedResponse);
 
+    if (!isValid) {
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    return parsedResponse;
+  }
+
+  async executeStreamRequest({
+    model,
+    request,
+    schema,
+    onUpdate,
+  }: GPTStreamJSONRequest): Promise<any> {
+    const openai = new OpenAI({
+      apiKey: this.apiKey,
+    });
+
+    const description = generateSchemaDescription(schema as any);
+    console.log(
+      '🚀 ~ file: index.ts:169 ~ GPTJSON ~ description:',
+      description
+    );
+
+    const stream = await openai.chat.completions.create({
+      model: model,
+      stream: true,
+      messages: [
+        {
+          role: 'user',
+          content: `${request}
+      Do not include any explanations, only provide a  RFC8259 compliant JSON response following this format without deviation.
+      ${description}`,
+        },
+      ],
+    });
+
+    let fetched = '';
+
+    let parsedResponse: any = null;
+
+    for await (const part of stream) {
+      fetched += part.choices[0]?.delta.content;
+
+      const newParsedResponse =
+        tryParse(fetched) ??
+        tryParse(fetched + '}') ??
+        tryParse(fetched + ']') ??
+        tryParse(fetched.trim().replace(/,$/, '') + '}') ??
+        tryParse(fetched.trim().replace(/,$/, '') + ']');
+
+      if (newParsedResponse) {
+        const isValid = await schema.isValid(newParsedResponse);
+
+        if (isValid) {
+          onUpdate?.(newParsedResponse);
+          parsedResponse = newParsedResponse;
+        }
+      }
+    }
+
+    const isValid = await schema.isValid(parsedResponse);
     if (!isValid) {
       throw new Error('Invalid response from OpenAI');
     }
