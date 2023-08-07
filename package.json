@@ -1,6 +1,6 @@
 {
   "name": "gpt-json",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Call OpenAI's GPT APIs with structured responses",
   "main": "./lib/index.js",
   "files": [
