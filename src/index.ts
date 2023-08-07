@@ -166,10 +166,6 @@ class GPTJSON {
     });
 
     const description = generateSchemaDescription(schema as any);
-    console.log(
-      '🚀 ~ file: index.ts:169 ~ GPTJSON ~ description:',
-      description
-    );
 
     const stream = await openai.chat.completions.create({
       model: model,
