@@ -83,3 +83,7 @@ const response = await client.executeStreamRequest({
 ## License
 
 [This package](https://github.com/KLaci/gpt-json/blob/main/LICENSE) is licenced under the MIT licence.
+
+## Contact
+
+If you have any questions or queries, please contact me at contact@laszlokiss.dev.
