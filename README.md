@@ -4,7 +4,7 @@ gpt-json is a library that enables interaction with OpenAI's GPT models using JS
 
 ## Features
 
-- Schema defination and validation
+- Schema definition and validation
 - Message parsing
 - Streaming support
 
