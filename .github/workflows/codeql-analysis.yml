@@ -1,5 +1,5 @@
 # Reusable workflow for code analysis; to eject, you can replace this file with
-# https://github.com/ryansonshine/ryansonshine/blob/main/.github/workflows/codeql-analysis.yml
+# https://github.com/KLaci/KLaci/blob/main/.github/workflows/codeql-analysis.yml
 name: "CodeQL"
 
 permissions:
@@ -18,4 +18,4 @@ on:
 
 jobs:
   analyze:
-    uses: ryansonshine/ryansonshine/.github/workflows/codeql-analysis.yml@main
+    uses: KLaci/KLaci/.github/workflows/codeql-analysis.yml@main
